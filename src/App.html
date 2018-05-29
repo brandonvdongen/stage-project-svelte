@@ -56,10 +56,27 @@
 <script>
     export default {
         data() {
-            return {name: "test", results: [], page: 1, per_page: 50, num_shown: 0}
+            return {name: "test", results: [], page: 1, num_shown: 0}
         },
         methods: {
             find(page_num) {
+
+                this.set({page: page_num});
+                const search = document.getElementById("search").value.split(" ").join("+");
+                const {server, per_page,page} = app.get() || 1;
+                const url = server+"/search/" + encodeURI(search) + "/" + page;
+                console.log(url);
+                fetch(url).then(res => {
+                    return res.json();
+                }).then(json => {
+                    console.log(json);
+                    this.set({results: json.hits, num_shown: json.hits.length});
+                }).catch(reason => {
+                    console.warn(reason);
+                });
+
+                //todo remove this codeblock once replacement is done
+                /*
                 this.set({page: page_num});
                 const search = document.getElementById("search").value.split(" ").join("+");
                 const {per_page, page} = app.get();
@@ -74,6 +91,7 @@
                         this.set({results: myJson.hits, num_shown: myJson.hits.length});
                         console.log(50 % myJson.hits.length);
                     }.bind(this));
+                    */
             }
         }
     }
