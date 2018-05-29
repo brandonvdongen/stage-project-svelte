@@ -1,8 +1,80 @@
-<h1>Hello {name}!</h1>
+<label>
+    Search
+    <input on:change="find(1)" type="text" id="search">
+</label>
+<div id="images">
+    {#each results as result}
+    <div class="img-container">
+        <img src="{result.previewURL}" alt="image">
+    </div>
+    {/each}
+</div>
+
+{#if page > 1}
+<button on:click="find(page-1)">Previous</button>
+{:else}
+<button disabled>Previous</button>
+{/if}
+{page}
+{#if (num_shown % per_page) || num_shown == 0}
+<button disabled>Next</button>
+{:else}
+<button on:click="find(page+1)">Next</button>
+{/if}
 
 <style>
-	h1 {
-		color: purple;
-        font-size:100px;
-	}
+
+    #images {
+        display: grid;
+        grid-gap: 5px;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        justify-items: center;
+    }
+
+    #images .img-container {
+        justify-self: center;
+        align-self: center;
+        display: grid;
+        background-color: white;
+        height: 160px;
+        width: 160px;
+        padding: 5px;
+        box-sizing: border-box;
+    }
+
+    #images .img-container:hover {
+        background-color: #cccccc;
+    }
+
+    #images img {
+        justify-self: center;
+        align-self: center;
+    }
+
 </style>
+
+<script>
+    export default {
+        data() {
+            return {name: "test", results: [], page: 1, per_page: 50, num_shown: 0}
+        },
+        methods: {
+            find(page_num) {
+                this.set({page: page_num});
+                const search = document.getElementById("search").value.split(" ").join("+");
+                const {per_page, page} = app.get();
+                const url = "https://pixabay.com/api/?key=8990826-747bd9300ee0354a8b5e85d26&q=" + encodeURI(search) + "&image_type=photo&per_page=" + per_page + "&page=" + page + "&orientation=horizontal";
+                console.log(url);
+                fetch(url)
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (myJson) {
+                        console.log("search:", myJson);
+                        this.set({results: myJson.hits, num_shown: myJson.hits.length});
+                        console.log(50 % myJson.hits.length);
+                    }.bind(this));
+            }
+        }
+    }
+</script>
